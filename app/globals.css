@@ -3,20 +3,17 @@
 @tailwind utilities;
 
 :root {
-  --soft-rose: #fce7f3;
-  --soft-peach: #ffedd5;
-  --soft-mint: #d1fae5;
-  --soft-lavender: #ede9fe;
-  --soft-sky: #e0f2fe;
-  --phase-menstrual: #f9a8d4;
-  --phase-fertile: #c4b5fd;
-  --phase-ovulation: #a78bfa;
-  --phase-luteal: #fcd34d;
-  --phase-follicular: #93c5fd;
+  --morandi-bg: #f5f3f0;
+  --morandi-card: #faf9f7;
+  --morandi-gray: #6b6b6b;
+  --morandi-dark: #4a4a4a;
+  --morandi-pink: #c4a8a0;
+  --morandi-pink-light: #e8dcd8;
+  --morandi-border: #e5e2de;
 }
 
 body {
-  @apply bg-soft-rose/30 text-gray-800 antialiased;
+  @apply bg-morandi-bg text-morandi-dark antialiased;
   font-feature-settings: "rlig" 1, "calt" 1;
 }
 

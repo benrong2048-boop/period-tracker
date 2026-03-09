@@ -1,5 +1,6 @@
 import type { PeriodRecord } from "./types";
 import type { DayPhase, CyclePhase } from "./types";
+import type { CycleStats } from "./types";
 
 const DEFAULT_CYCLE_LENGTH = 28;
 const LUTEAL_DAYS_BEFORE_PERIOD = 14; // ovulation = 14 days before next period
@@ -148,16 +149,132 @@ export function getTodayPhase(periods: PeriodRecord[]): DayPhase {
 
 /**
  * Get phases for every day in a month (YYYY-MM).
+ * Optional predictedPeriodDates: set of date strings to mark as predicted period.
  */
-export function getPhasesForMonth(yearMonth: string, periods: PeriodRecord[]): DayPhase[] {
+export function getPhasesForMonth(
+  yearMonth: string,
+  periods: PeriodRecord[],
+  predictedPeriodDates?: Set<string>
+): DayPhase[] {
   const [y, m] = yearMonth.split("-").map(Number);
   const first = new Date(y, m - 1, 1);
   const last = new Date(y, m, 0);
   const out: DayPhase[] = [];
   const cur = new Date(first);
   while (cur <= last) {
-    out.push(getPhaseForDate(formatDate(cur), periods));
+    const dateStr = formatDate(cur);
+    const dayPhase = getPhaseForDate(dateStr, periods);
+    if (predictedPeriodDates?.has(dateStr)) {
+      out.push({ ...dayPhase, isPredicted: true });
+    } else {
+      out.push(dayPhase);
+    }
     cur.setDate(cur.getDate() + 1);
   }
   return out;
+}
+
+/**
+ * Compute average cycle length from consecutive period start dates (last 6 cycles).
+ */
+export function getAverageCycleLength(periods: PeriodRecord[]): number {
+  if (periods.length < 2) return DEFAULT_CYCLE_LENGTH;
+  const sorted = [...periods].sort(
+    (a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+  );
+  let sum = 0;
+  let count = 0;
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const a = parseDate(sorted[i].start_date);
+    const b = parseDate(sorted[i + 1].start_date);
+    const diff = daysBetween(b, a);
+    if (diff >= 21 && diff <= 45) {
+      sum += diff;
+      count++;
+      if (count >= 5) break;
+    }
+  }
+  if (count === 0) return DEFAULT_CYCLE_LENGTH;
+  return Math.round(sum / count);
+}
+
+/**
+ * Predicted next period start based on last period + average cycle length.
+ */
+export function getPredictedNextPeriodStart(periods: PeriodRecord[]): string | null {
+  if (periods.length === 0) return null;
+  const sorted = [...periods].sort(
+    (a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+  );
+  const lastStart = sorted[0].start_date;
+  const avg = getAverageCycleLength(periods);
+  return getNextPeriodStart(lastStart, avg);
+}
+
+/**
+ * Status dashboard: days until next, current day of cycle, predicted date, average length.
+ */
+export function getCycleStats(periods: PeriodRecord[]): CycleStats {
+  const today = formatDate(new Date());
+  const todayDate = parseDate(today);
+  const avg = getAverageCycleLength(periods);
+  const predictedNext = getPredictedNextPeriodStart(periods);
+
+  if (periods.length === 0) {
+    return {
+      daysUntilNext: null,
+      currentDayOfCycle: null,
+      predictedNextStart: null,
+      averageCycleLength: avg,
+    };
+  }
+
+  const sorted = [...periods].sort(
+    (a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+  );
+  const lastStart = parseDate(sorted[0].start_date);
+  const cycleLen = sorted[0].cycle_length_days ?? DEFAULT_CYCLE_LENGTH;
+  const nextStart = parseDate(getNextPeriodStart(sorted[0].start_date, cycleLen));
+
+  let currentDayOfCycle: number | null = null;
+  if (todayDate >= lastStart && todayDate < nextStart) {
+    currentDayOfCycle = daysBetween(lastStart, todayDate) + 1;
+  }
+
+  let daysUntilNext: number | null = null;
+  if (predictedNext) {
+    const pred = parseDate(predictedNext);
+    if (todayDate < pred) {
+      daysUntilNext = daysBetween(todayDate, pred);
+    }
+  }
+
+  return {
+    daysUntilNext,
+    currentDayOfCycle,
+    predictedNextStart: predictedNext,
+    averageCycleLength: avg,
+  };
+}
+
+/**
+ * Set of date strings for predicted period in a given month (for calendar overlay).
+ * Assumes predicted period length 5 days from predicted start.
+ */
+export function getPredictedPeriodDatesInMonth(
+  yearMonth: string,
+  periods: PeriodRecord[]
+): Set<string> {
+  const pred = getPredictedNextPeriodStart(periods);
+  if (!pred) return new Set();
+  const [y, m] = yearMonth.split("-").map(Number);
+  const monthStart = new Date(y, m - 1, 1);
+  const monthEnd = new Date(y, m, 0);
+  const predStart = parseDate(pred);
+  const set = new Set<string>();
+  for (let i = 0; i < 5; i++) {
+    const d = addDays(predStart, i);
+    if (d >= monthStart && d <= monthEnd) set.add(formatDate(d));
+  }
+  return set;
 }

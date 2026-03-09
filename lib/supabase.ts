@@ -29,7 +29,8 @@ export async function addPeriod(
   startDate: string,
   endDate: string | null,
   cycleLength: number,
-  userId: string | null
+  userId: string | null,
+  extra?: { mood?: string | null; symptom_intensity?: number | null; note?: string | null }
 ): Promise<PeriodRecord> {
   const { data, error } = await supabase
     .from("periods")
@@ -38,6 +39,9 @@ export async function addPeriod(
       start_date: startDate,
       end_date: endDate,
       cycle_length_days: cycleLength,
+      mood: extra?.mood ?? null,
+      symptom_intensity: extra?.symptom_intensity ?? null,
+      note: extra?.note ?? null,
       updated_at: new Date().toISOString(),
     })
     .select()
@@ -49,7 +53,13 @@ export async function addPeriod(
 
 export async function updatePeriod(
   id: string,
-  updates: { end_date?: string | null; cycle_length_days?: number }
+  updates: {
+    end_date?: string | null;
+    cycle_length_days?: number;
+    mood?: string | null;
+    symptom_intensity?: number | null;
+    note?: string | null;
+  }
 ): Promise<PeriodRecord> {
   const { data, error } = await supabase
     .from("periods")

@@ -1,6 +1,10 @@
 import { getPeriods } from "@/lib/supabase";
-import { getPhasesForMonth } from "@/lib/cycle";
+import {
+  getPhasesForMonth,
+  getPredictedPeriodDatesInMonth,
+} from "@/lib/cycle";
 import { CalendarGrid } from "@/components/CalendarGrid";
+import { Calendar as CalendarIcon } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -15,36 +19,46 @@ export default async function CalendarPage() {
   const now = new Date();
   const yearMonth =
     now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
-  const phases = getPhasesForMonth(yearMonth, periods);
+  const predictedDates = getPredictedPeriodDatesInMonth(yearMonth, periods);
+  const phases = getPhasesForMonth(yearMonth, periods, predictedDates);
 
-  const title = now.toLocaleDateString("zh-TW", { month: "long", year: "numeric" });
+  const title = now.toLocaleDateString("zh-TW", {
+    month: "long",
+    year: "numeric",
+  });
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-800">日曆</h1>
-        <p className="text-sm text-gray-500 mt-1">{title}</p>
+      <div className="flex items-center gap-2">
+        <CalendarIcon className="w-5 h-5 text-morandi-pink" strokeWidth={1.8} />
+        <div>
+          <h1 className="text-xl font-semibold text-morandi-dark">日曆</h1>
+          <p className="text-sm text-morandi-gray">{title}</p>
+        </div>
       </div>
 
       <CalendarGrid yearMonth={yearMonth} phases={phases} />
 
-      <div className="rounded-xl bg-white/60 p-4 text-sm text-gray-600">
-        <p className="font-medium text-gray-700 mb-2">圖例</p>
-        <ul className="space-y-1">
+      <div className="rounded-2xl bg-morandi-card border border-morandi-border p-4 text-sm text-morandi-gray">
+        <p className="font-medium text-morandi-dark mb-2">圖例</p>
+        <ul className="space-y-1.5">
           <li className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded bg-pink-300 shrink-0" /> 月經期
+            <span className="w-4 h-4 rounded bg-morandi-pink/60 shrink-0" /> 月經期
           </li>
           <li className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded bg-sky-200 shrink-0" /> 濾泡期
+            <span className="w-4 h-4 rounded border border-morandi-pink bg-morandi-pinkLight/50 shrink-0" /> 預測經期
           </li>
           <li className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded bg-violet-300 shrink-0" /> 易孕期
+            <span className="w-4 h-4 rounded bg-morandi-stone/30 shrink-0" /> 濾泡期
           </li>
           <li className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded bg-purple-400 shrink-0" /> 排卵日
+            <span className="w-4 h-4 rounded bg-morandi-pinkLight/70 shrink-0" /> 易孕期
           </li>
           <li className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded bg-amber-200 shrink-0" /> 黃體期
+            <span className="w-4 h-4 rounded bg-morandi-pink/50 shrink-0 ring-1 ring-morandi-pink" /> 排卵日
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="w-4 h-4 rounded bg-morandi-stone/25 shrink-0" /> 黃體期
           </li>
         </ul>
       </div>
