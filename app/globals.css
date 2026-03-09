@@ -3,22 +3,30 @@
 @tailwind utilities;
 
 :root {
-  --morandi-bg: #f5f3f0;
-  --morandi-card: #faf9f7;
-  --morandi-gray: #6b6b6b;
-  --morandi-dark: #4a4a4a;
-  --morandi-pink: #c4a8a0;
-  --morandi-pink-light: #e8dcd8;
-  --morandi-border: #e5e2de;
+  --blossom: #ffb7c5;
+  --soft: #ffd6e0;
+  --cloud: #ffe8ef;
+  --lavender: #e8d5f2;
+  --coral: #ffc9b9;
 }
 
 body {
-  @apply bg-morandi-bg text-morandi-dark antialiased;
-  font-feature-settings: "rlig" 1, "calt" 1;
+  @apply antialiased;
+  background: linear-gradient(135deg, #fff5f7 0%, #ffe8ef 25%, #ffd6e0 50%, #e8d5f2 75%, #ffe8ef 100%);
+  background-size: 400% 400%;
+  animation: gradientBg 20s ease infinite;
+}
+
+@keyframes gradientBg {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 @layer utilities {
   .tap-highlight-none {
     -webkit-tap-highlight-color: transparent;
+  }
+  .glass-card {
+    @apply backdrop-blur-xl bg-white/60 border border-white/50;
   }
 }

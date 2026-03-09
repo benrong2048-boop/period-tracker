@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
+import { CompanionChat } from "@/components/CompanionChat";
 
 export const metadata: Metadata = {
-  title: "週期小記 2.0",
-  description: "經期記錄與週期預測",
+  title: "身体节律",
+  description: "温暖的身体节律陪伴系统",
 };
 
 export default function RootLayout({
@@ -13,12 +14,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-TW">
-      <body className="min-h-screen flex flex-col pb-20 bg-morandi-bg">
-        <main className="flex-1 max-w-lg mx-auto w-full px-4 pt-6">
-          {children}
-        </main>
+    <html lang="zh-CN">
+      <body className="min-h-screen flex flex-col">
+        <main className="flex-1">{children}</main>
         <Nav />
+        <CompanionChat />
       </body>
     </html>
   );

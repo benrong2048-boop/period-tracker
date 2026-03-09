@@ -1,26 +1,13 @@
-import { getPeriods } from "@/lib/supabase";
-import { getTodayPhase, getCycleStats, getDayOfPeriodIfToday } from "@/lib/cycle";
-import { getDailyTips } from "@/lib/health-tips";
-import { PhaseBadge } from "@/components/PhaseBadge";
-import { StatusDashboard } from "@/components/StatusDashboard";
-import { TodayTipsCard } from "@/components/TodayTipsCard";
-import { Lightbulb } from "lucide-react";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { motion } from "framer-motion";
+import { BodyStatusCard } from "@/components/BodyStatusCard";
+import { CycleRingCard } from "@/components/CycleRingCard";
+import { MoodCard } from "@/components/MoodCard";
+import { SuggestionCard } from "@/components/SuggestionCard";
+import { WeatherCard } from "@/components/WeatherCard";
 
-export default async function HomePage() {
-  let periods: Awaited<ReturnType<typeof getPeriods>> = [];
-  try {
-    periods = await getPeriods(null);
-  } catch {
-    periods = [];
-  }
-
-  const today = getTodayPhase(periods);
-  const stats = getCycleStats(periods);
-  const tips = getDailyTips(today.phase);
-  const dayOfPeriod = getDayOfPeriodIfToday(periods);
-
+export default function HomePage() {
   const todayStr = new Date().toLocaleDateString("zh-CN", {
     month: "long",
     day: "numeric",
@@ -28,45 +15,34 @@ export default async function HomePage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="text-sm text-morandi-gray">{todayStr}</p>
-        <h1 className="text-xl font-semibold text-morandi-dark mt-0.5">今日阶段</h1>
-      </div>
+    <div className="min-h-screen pb-24">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="space-y-4 pt-6 px-4 max-w-lg mx-auto"
+      >
+        <div className="mb-6">
+          <p className="text-inkLight text-sm">{todayStr}</p>
+          <h1 className="text-xl font-semibold text-ink mt-0.5">身体节律</h1>
+        </div>
 
-      <StatusDashboard stats={stats} />
+        <div className="space-y-4">
+          <BodyStatusCard />
+          <CycleRingCard />
+          <MoodCard />
+          <SuggestionCard />
+          <WeatherCard />
+        </div>
 
-      <div className="flex flex-wrap gap-2">
-        <PhaseBadge phase={today.phase} label={today.label} />
-      </div>
+        <p className="text-inkLight text-xs text-center pt-2">
+          点击右下角气泡可打开情绪陪伴
+        </p>
 
-      {/* 今日专属贴士：天气 + 周期 + 心情，动态建议 */}
-      <TodayTipsCard
-        phase={today.phase}
-        phaseLabel={today.label}
-        dayOfPeriod={dayOfPeriod}
-      />
-
-      <section className="rounded-2xl bg-morandi-card border border-morandi-border p-5 shadow-card">
-        <h2 className="flex items-center gap-2 text-morandi-dark font-medium mb-3">
-          <Lightbulb className="w-4 h-4 text-morandi-pink" strokeWidth={1.8} />
-          今日小提醒
-        </h2>
-        <ul className="space-y-2.5">
-          {tips.map((t, i) => (
-            <li key={i} className="flex gap-3 text-sm text-morandi-gray leading-relaxed">
-              <span className="text-morandi-pink shrink-0">
-                {t.type === "diet" ? "饮食" : t.type === "rest" ? "休息" : "情绪"}
-              </span>
-              <span>{t.text}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <p className="text-xs text-morandi-gray/80 text-center">
-        仅供参考，不取代医疗建议。
-      </p>
+        <p className="text-inkLight/70 text-xs text-center pt-6">
+          仅供参考，不取代医疗建议。点击右下角气泡可打开情绪陪伴。
+        </p>
+      </motion.div>
     </div>
   );
 }
