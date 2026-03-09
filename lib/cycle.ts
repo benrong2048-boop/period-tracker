@@ -148,6 +148,26 @@ export function getTodayPhase(periods: PeriodRecord[]): DayPhase {
 }
 
 /**
+ * 若今天处于经期内，返回经期第几天（1-based）；否则返回 null。
+ */
+export function getDayOfPeriodIfToday(periods: PeriodRecord[]): number | null {
+  const today = formatDate(new Date());
+  const todayDate = parseDate(today);
+  if (periods.length === 0) return null;
+  const sorted = [...periods].sort(
+    (a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+  );
+  for (const p of sorted) {
+    const start = parseDate(p.start_date);
+    const end = p.end_date ? parseDate(p.end_date) : addDays(start, 5);
+    if (todayDate >= start && todayDate <= end) {
+      return daysBetween(start, todayDate) + 1;
+    }
+  }
+  return null;
+}
+
+/**
  * Get phases for every day in a month (YYYY-MM).
  * Optional predictedPeriodDates: set of date strings to mark as predicted period.
  */
